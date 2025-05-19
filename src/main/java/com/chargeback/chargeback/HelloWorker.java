@@ -16,18 +16,38 @@ public class HelloWorker {
         System.out.println("Handling job: " + job.getKey());
         System.out.println("Variables: " + job.getVariables());
 
-        // Access and modify variables
-        String name = job.getVariablesAsMap().get("name").toString();
-        name = "ayush"; // modify or process as needed
+        Map<String, Object> variables = job.getVariablesAsMap();
+        Map<String, Object> resultVariables = new HashMap<>();
 
-        // Prepare variables to send back to the process
-        Map<String, Object> updatedVariables = new HashMap<>();
-        updatedVariables.put("name", name);
+        // Check if "cbid" is present
+        if (variables.containsKey("cbid") && variables.get("cbid") != null) {
+            String cbid = variables.get("cbid").toString();
+            System.out.println("Received cbid: " + cbid);
 
-        // Complete the job and send variables back
+            // Dummy map
+            Map<String, String> dummyDb = new HashMap<>();
+            dummyDb.put("cbid", "jhon");
+            dummyDb.put("cb002", "Alice");
+            dummyDb.put("cb003", "Bob");
+
+            if (dummyDb.containsKey(cbid)) {
+                resultVariables.put("isFound", 1);
+                resultVariables.put("user", dummyDb.get(cbid));
+                System.out.println("cbid found: " + dummyDb.get(cbid));
+            } else {
+                resultVariables.put("isFound", 0);
+                System.out.println("cbid not found");
+            }
+        } else {
+            resultVariables.put("isFound", 0);
+            System.out.println("cbid was not provided");
+        }
+
+        // Complete the job with results
         client.newCompleteCommand(job.getKey())
-                .variables(updatedVariables) //
+                .variables(resultVariables)
                 .send()
                 .join();
     }
+
 }
